@@ -4,13 +4,18 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
     buildToolsVersion "30.0.3"
+
+    aaptOptions {
+        noCompress "tflite"
+        // or noCompress "lite"
+    }
 
     defaultConfig {
         applicationId "com.google.ar.core.examples.java.ml"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
     }
@@ -56,6 +61,11 @@ dependencies {
     // MLKit
     implementation 'com.google.mlkit:object-detection:16.2.3'
     implementation 'com.google.mlkit:object-detection-custom:16.3.1'
+    implementation 'com.google.mlkit:object-detection-custom:17.0.0'
+
+    // Sceneform
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.14.0'
+    implementation 'com.google.ar.sceneform:core:1.14.0'
 
     // ARCore
     implementation 'com.google.ar:core:1.24.0'
