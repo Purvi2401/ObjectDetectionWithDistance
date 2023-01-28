@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.ar.core.examples.java.ml
 
-package com.google.ar.core.examples.java.ml.classification
-
-import android.R
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -32,33 +30,31 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.ar.core.*
-import com.google.ar.core.examples.java.ml.classification.utils.ImageUtils
-import com.google.ar.core.examples.java.ml.classification.utils.VertexUtils.rotateCoordinates
-import com.google.ar.sceneform.rendering.*
+import com.google.ar.core.examples.java.ml.utils.ImageUtils
+import com.google.ar.core.examples.java.ml.utils.VertexUtils.rotateCoordinates
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Scene
 import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.rendering.*
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
-import com.google.ar.sceneform.rendering.Color as arColor
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import kotlinx.coroutines.tasks.asDeferred
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.pow
 import kotlin.math.sqrt
-import java.util.Objects
+import com.google.ar.sceneform.rendering.Color as arColor
 
 /**
  * Analyzes an image using ML Kit.
  */
 class MLKitObjectDetector(context: Activity) : ObjectDetector(context) {
+
   // To use a custom model, follow steps on https://developers.google.com/ml-kit/vision/object-detection/custom-models/android.
    val model = LocalModel.Builder().setAssetFilePath("mobilenet_v1_1.0_224_quantized_1_metadata_1.tflite").build()
    val builder = CustomObjectDetectorOptions.Builder(model)
@@ -87,15 +83,17 @@ class MLKitObjectDetector(context: Activity) : ObjectDetector(context) {
       val bestLabel = obj.labels.maxByOrNull { label -> label.confidence } ?: return@mapNotNull null
       val coords = obj.boundingBox.exactCenterX().toInt() to obj.boundingBox.exactCenterY().toInt()
       val rotatedCoordinates = coords.rotateCoordinates(rotatedImage.width, rotatedImage.height, imageRotation)
+
       DetectedObjectResult(bestLabel.confidence, bestLabel.text, rotatedCoordinates)
     }
   }
 
   @Suppress("USELESS_IS_CHECK")
   fun hasCustomModel() = builder is CustomObjectDetectorOptions.Builder
+
 }
 
-class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
+class Measurement(context: Activity) : AppCompatActivity(), Scene.OnUpdateListener {
   private val MIN_OPENGL_VERSION = 3.0
   private val TAG: String = Measurement::class.java.getSimpleName()
 
@@ -133,7 +131,8 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
   private val midAnchorNodes: MutableMap<String, AnchorNode> = mutableMapOf()
   private val fromGroundNodes = ArrayList<List<Node>>()
 
-  private val multipleDistances = Array(Constants.maxNumMultiplePoints,
+  private val multipleDistances = Array(
+    Constants.maxNumMultiplePoints,
     {Array<TextView?>(Constants.maxNumMultiplePoints){null} })
   private lateinit var initCM: String
 
@@ -147,15 +146,15 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
     }
 
     setContentView(R.layout.activity_measurement)
-    val distanceModeArray = resources.getStringArray(com.google.ar.core.R.array.distance_mode)
+    val distanceModeArray = resources.getStringArray(R.array.distance_mode)
     distanceModeArray.map{it->
       distanceModeArrayList.add(it)
     }
-    arFragment = supportFragmentManager.findFragmentById(com.google.ar.core.R.id.sceneform_fragment) as ArFragment?
-    distanceModeTextView = findViewById(com.google.ar.core.R.id.distance_view)
-    multipleDistanceTableLayout = findViewById(com.google.ar.core.R.id.multiple_distance_table)
+    arFragment = supportFragmentManager.findFragmentById(R.id.sceneform_fragment) as ArFragment?
+    distanceModeTextView = findViewById(R.id.distance_view)
+    multipleDistanceTableLayout = findViewById(R.id.multiple_distance_table)
 
-    initCM = resources.getString(com.google.ar.core.R.string.initCM)
+    initCM = resources.getString(R.string.initCM)
 
     configureSpinner()
     initArrowView()
@@ -188,12 +187,12 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
   }
 
   private fun initDistanceTable(){
-    for (i in 0 until Constants.maxNumMultiplePoints+1){
+    for (i in 0 until Constants.maxNumMultiplePoints +1){
       val tableRow = TableRow(this)
       multipleDistanceTableLayout.addView(tableRow,
         multipleDistanceTableLayout.width,
         Constants.multipleDistanceTableHeight / (Constants.maxNumMultiplePoints + 1))
-      for (j in 0 until Constants.maxNumMultiplePoints+1){
+      for (j in 0 until Constants.maxNumMultiplePoints +1){
         val textView = TextView(this)
         textView.setTextColor(Color.WHITE)
         if (i==0){
@@ -229,37 +228,41 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
     arrow1UpLinearLayout.orientation = LinearLayout.VERTICAL
     arrow1UpLinearLayout.gravity = Gravity.CENTER
     arrow1UpView = ImageView(this)
-    arrow1UpView.setImageResource(com.google.ar.core.R.drawable.arrow_1up)
+    arrow1UpView.setImageResource(R.drawable.arrow_1up)
     arrow1UpLinearLayout.addView(arrow1UpView,
       Constants.arrowViewSize,
-      Constants.arrowViewSize)
+      Constants.arrowViewSize
+    )
 
     arrow1DownLinearLayout = LinearLayout(this)
     arrow1DownLinearLayout.orientation = LinearLayout.VERTICAL
     arrow1DownLinearLayout.gravity = Gravity.CENTER
     arrow1DownView = ImageView(this)
-    arrow1DownView.setImageResource(com.google.ar.core.R.drawable.arrow_1down)
+    arrow1DownView.setImageResource(R.drawable.arrow_1down)
     arrow1DownLinearLayout.addView(arrow1DownView,
       Constants.arrowViewSize,
-      Constants.arrowViewSize)
+      Constants.arrowViewSize
+    )
 
     arrow10UpLinearLayout = LinearLayout(this)
     arrow10UpLinearLayout.orientation = LinearLayout.VERTICAL
     arrow10UpLinearLayout.gravity = Gravity.CENTER
     arrow10UpView = ImageView(this)
-    arrow10UpView.setImageResource(com.google.ar.core.R.drawable.arrow_10up)
+    arrow10UpView.setImageResource(R.drawable.arrow_10up)
     arrow10UpLinearLayout.addView(arrow10UpView,
       Constants.arrowViewSize,
-      Constants.arrowViewSize)
+      Constants.arrowViewSize
+    )
 
     arrow10DownLinearLayout = LinearLayout(this)
     arrow10DownLinearLayout.orientation = LinearLayout.VERTICAL
     arrow10DownLinearLayout.gravity = Gravity.CENTER
     arrow10DownView = ImageView(this)
-    arrow10DownView.setImageResource(com.google.ar.core.R.drawable.arrow_10down)
+    arrow10DownView.setImageResource(R.drawable.arrow_10down)
     arrow10DownLinearLayout.addView(arrow10DownView,
       Constants.arrowViewSize,
-      Constants.arrowViewSize)
+      Constants.arrowViewSize
+    )
   }
 
   private fun initRenderable() {
@@ -284,7 +287,7 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
 
     ViewRenderable
       .builder()
-      .setView(this, com.google.ar.core.R.layout.distance_text_layout)
+      .setView(this, R.layout.distance_text_layout)
       .build()
       .thenAccept{
         distanceCardViewRenderable = it
@@ -370,10 +373,10 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
 
   private fun configureSpinner(){
     distanceMode = distanceModeArrayList[0]
-    distanceModeSpinner = findViewById(com.google.ar.core.R.id.distance_mode_spinner)
+    distanceModeSpinner = findViewById(R.id.distance_mode_spinner)
     val distanceModeAdapter = ArrayAdapter(
       applicationContext,
-      R.layout.simple_spinner_item,
+      android.R.layout.simple_spinner_item,
       distanceModeArrayList
     )
     distanceModeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -414,7 +417,7 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
   }
 
   private fun clearButton(){
-    clearButton = findViewById(com.google.ar.core.R.id.clearButton)
+    clearButton = findViewById(R.id.clearButton)
     clearButton.setOnClickListener(object: View.OnClickListener {
       override fun onClick(v: View?) {
         clearAllAnchors()
@@ -679,7 +682,7 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
     }
     ViewRenderable
       .builder()
-      .setView(this, com.google.ar.core.R.layout.point_text_layout)
+      .setView(this, R.layout.point_text_layout)
       .build()
       .thenAccept{
         it.isShadowReceiver = false
@@ -723,7 +726,7 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
     if (fromGroundNodes.size == 0) return
     for (node in fromGroundNodes){
       val textView = (distanceCardViewRenderable!!.view as LinearLayout)
-        .findViewById<TextView>(com.google.ar.core.R.id.distanceCard)
+        .findViewById<TextView>(R.id.distanceCard)
       val distanceCM = changeUnit(node[0].worldPosition.y + 1.0f, "cm")
       textView.text = "%.0f".format(distanceCM) + " cm"
     }
@@ -751,7 +754,7 @@ class Measurement : AppCompatActivity(), Scene.OnUpdateListener {
   private fun measureDistanceOf2Points(distanceMeter: Float){
     val distanceTextCM = makeDistanceTextWithCM(distanceMeter)
     val textView = (distanceCardViewRenderable!!.view as LinearLayout)
-      .findViewById<TextView>(com.google.ar.core.R.id.distanceCard)
+      .findViewById<TextView>(R.id.distanceCard)
     textView.text = distanceTextCM
     Log.d(TAG, "distance: ${distanceTextCM}")
   }

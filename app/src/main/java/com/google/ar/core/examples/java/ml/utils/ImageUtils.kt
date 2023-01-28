@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ar.core.examples.java.ml.classification.utils
+package com.google.ar.core.examples.java.ml.utils
 
 import android.graphics.Bitmap
 import android.graphics.Matrix

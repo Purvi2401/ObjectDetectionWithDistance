@@ -1,4 +1,4 @@
-package com.google.ar.core.examples.java.ml.classification
+package com.google.ar.core.examples.java.ml
 
 object Constants{
     const val maxNumMultiplePoints = 6

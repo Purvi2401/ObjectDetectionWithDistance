@@ -19,26 +19,23 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.ar.core.Anchor
-import com.google.ar.core.Coordinates2d
-import com.google.ar.core.Frame
-import com.google.ar.core.TrackingState
+import com.google.ar.core.*
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper
 import com.google.ar.core.examples.java.common.samplerender.SampleRender
 import com.google.ar.core.examples.java.common.samplerender.arcore.BackgroundRenderer
-import com.google.ar.core.examples.java.ml.classification.DetectedObjectResult
-import com.google.ar.core.examples.java.ml.classification.GoogleCloudVisionDetector
-import com.google.ar.core.examples.java.ml.classification.MLKitObjectDetector
-import com.google.ar.core.examples.java.ml.classification.ObjectDetector
 import com.google.ar.core.examples.java.ml.render.LabelRender
 import com.google.ar.core.examples.java.ml.render.PointCloudRender
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
+import com.google.ar.sceneform.ux.ArFragment
 import java.util.Collections
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.util.ArrayList
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Renders the HelloAR application into using our example Renderer.
@@ -66,6 +63,53 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   val gcpAnalyzer = GoogleCloudVisionDetector(activity)
 
   var currentAnalyzer: ObjectDetector = gcpAnalyzer
+
+  private var arFragment: ArFragment? = null
+  private val placedAnchors = ArrayList<Anchor>()
+
+  private fun changeUnit(distanceMeter: Float, unit: String): Float{
+    return when(unit){
+      "cm" -> distanceMeter * 100
+      "mm" -> distanceMeter * 1000
+      else -> distanceMeter
+    }
+  }
+
+  private fun makeDistanceTextWithCM(distanceMeter: Float): String{
+    val distanceCM = changeUnit(distanceMeter, "cm")
+    val distanceCMFloor = "%.2f".format(distanceCM)
+    return "${distanceCMFloor} cm"
+  }
+
+  private fun measureDistanceOf2Points(distanceMeter: Float): String{
+    val distanceTextCM = makeDistanceTextWithCM(distanceMeter)
+    Log.d("measurement", "distance of 2 Points: ${distanceTextCM}")
+    return distanceTextCM
+  }
+
+  private fun measureDistanceFromCamera(centreCoordinates: Pair<Int, Int>, frame: Frame): String{
+    return if (placedAnchors.size >= 1) {
+      val distanceMeter = calculateDistance(
+        centreCoordinates,
+        frame!!.camera.pose)
+      measureDistanceOf2Points(distanceMeter)
+    }
+    else {
+      Log.i("measure dist from cam", "placed anchors empty")
+      ""
+    }
+  }
+
+  private fun calculateDistance(x: Float, y: Float): Float{
+    return sqrt(x.pow(2) + y.pow(2))
+  }
+
+  private fun calculateDistance(objectPose0: Pair<Int, Int>, objectPose1: Pose): Float{
+    return calculateDistance(
+      objectPose0.first - objectPose1.tx(),
+      objectPose0.second - objectPose1.ty()
+    )
+  }
 
   override fun onResume(owner: LifecycleOwner) {
     displayRotationHelper.onResume()
@@ -180,7 +224,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         val (atX, atY) = obj.centerCoordinate
         val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame) ?: return@mapNotNull null
         Log.i(TAG, "Created anchor ${anchor.pose} from hit test")
-        ARLabeledAnchor(anchor, obj.label)
+        placedAnchors.add(anchor)
+        val distance = measureDistanceFromCamera(obj.centerCoordinate, frame)
+        ARLabeledAnchor(anchor, obj.label+" "+distance)
       }
       arLabeledAnchors.addAll(anchors)
       view.post {

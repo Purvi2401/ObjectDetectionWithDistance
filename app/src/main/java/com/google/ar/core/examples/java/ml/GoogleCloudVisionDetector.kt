@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.ar.core.examples.java.ml.classification
+package com.google.ar.core.examples.java.ml
 
 import android.media.Image
 import android.util.Log
-import com.google.ar.core.examples.java.ml.MainActivity
-import com.google.ar.core.examples.java.ml.classification.utils.ImageUtils
-import com.google.ar.core.examples.java.ml.classification.utils.ImageUtils.toByteArray
-import com.google.ar.core.examples.java.ml.classification.utils.VertexUtils.calculateAverage
-import com.google.ar.core.examples.java.ml.classification.utils.VertexUtils.rotateCoordinates
-import com.google.ar.core.examples.java.ml.classification.utils.VertexUtils.toAbsoluteCoordinates
+import com.google.ar.core.examples.java.ml.utils.ImageUtils
+import com.google.ar.core.examples.java.ml.utils.ImageUtils.toByteArray
+import com.google.ar.core.examples.java.ml.utils.VertexUtils.calculateAverage
+import com.google.ar.core.examples.java.ml.utils.VertexUtils.rotateCoordinates
+import com.google.ar.core.examples.java.ml.utils.VertexUtils.toAbsoluteCoordinates
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.vision.v1.AnnotateImageRequest
 import com.google.cloud.vision.v1.Feature
