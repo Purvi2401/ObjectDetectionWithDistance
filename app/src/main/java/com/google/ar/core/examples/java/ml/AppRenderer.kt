@@ -87,7 +87,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     return distanceTextCM
   }
 
-  private fun measureDistanceFromCamera(centreCoordinates: Pair<Int, Int>, frame: Frame): String{
+  private fun measureDistanceFromCamera(centreCoordinates: Pose, frame: Frame): String{
     return if (placedAnchors.size >= 1) {
       val distanceMeter = calculateDistance(
         centreCoordinates,
@@ -100,14 +100,15 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     }
   }
 
-  private fun calculateDistance(x: Float, y: Float): Float{
-    return sqrt(x.pow(2) + y.pow(2))
+  private fun calculateDistance(x: Float, y: Float, z:Float): Float{
+    return sqrt(x.pow(2) + y.pow(2) + z.pow(2))
   }
 
-  private fun calculateDistance(objectPose0: Pair<Int, Int>, objectPose1: Pose): Float{
+  private fun calculateDistance(objectPose0: Pose, objectPose1: Pose): Float{
     return calculateDistance(
-      objectPose0.first - objectPose1.tx(),
-      objectPose0.second - objectPose1.ty()
+      objectPose0.tx() - objectPose1.tx(),
+      objectPose0.ty() - objectPose1.ty(),
+      objectPose0.tz() - objectPose1.tz()
     )
   }
 
@@ -225,7 +226,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame) ?: return@mapNotNull null
         Log.i(TAG, "Created anchor ${anchor.pose} from hit test")
         placedAnchors.add(anchor)
-        val distance = measureDistanceFromCamera(obj.centerCoordinate, frame)
+        val distance = measureDistanceFromCamera(anchor.pose, frame)
         ARLabeledAnchor(anchor, obj.label+" "+distance)
       }
       arLabeledAnchors.addAll(anchors)
