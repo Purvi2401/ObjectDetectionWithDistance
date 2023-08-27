@@ -87,18 +87,13 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     return distanceTextCM
   }
 
-  private fun measureDistanceFromCamera(centreCoordinates: Pose, frame: Frame): String{
-    return if (placedAnchors.size >= 1) {
-      val distanceMeter = calculateDistance(
-        centreCoordinates,
-        frame!!.camera.pose)
-      measureDistanceOf2Points(distanceMeter)
-    }
-    else {
-      Log.i("measure dist from cam", "placed anchors empty")
-      ""
-    }
+  private fun measureDistanceFromCamera(objectPose: Pose, cameraPose: Pose): String {
+    val distanceMeter = calculateDistance(objectPose, cameraPose)
+    val distanceTextCM = makeDistanceTextWithCM(distanceMeter)
+    Log.d("measurement", "Distance from camera: $distanceTextCM")
+    return distanceTextCM
   }
+
 
   private fun calculateDistance(x: Float, y: Float, z:Float): Float{
     return sqrt(x.pow(2) + y.pow(2) + z.pow(2))
@@ -218,6 +213,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
 
     /** If results were completed this frame, create [Anchor]s from model results. */
     val objects = objectResults
+    val cameraPose = frame.camera.pose
     if (objects != null) {
       objectResults = null
       Log.i(TAG, "$currentAnalyzer got objects: $objects")
@@ -226,7 +222,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame) ?: return@mapNotNull null
         Log.i(TAG, "Created anchor ${anchor.pose} from hit test")
         placedAnchors.add(anchor)
-        val distance = measureDistanceFromCamera(anchor.pose, frame)
+        val distance = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass cameraPose instead of frame
         ARLabeledAnchor(anchor, obj.label+" "+distance)
       }
       arLabeledAnchors.addAll(anchors)
@@ -250,13 +246,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     for (arDetectedObject in arLabeledAnchors) {
       val anchor = arDetectedObject.anchor
       if (anchor.trackingState != TrackingState.TRACKING) continue
-      labelRenderer.draw(
-        render,
-        viewProjectionMatrix,
-        anchor.pose,
-        camera.pose,
-        arDetectedObject.label
-      )
+      val distanceText = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass the camera pose here
+      val newLabel = "${arDetectedObject.label} - $distanceText"
+      labelRenderer.draw(render, viewProjectionMatrix, anchor.pose, cameraPose, newLabel)
     }
   }
 
