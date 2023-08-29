@@ -247,8 +247,10 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
       val anchor = arDetectedObject.anchor
       if (anchor.trackingState != TrackingState.TRACKING) continue
       val distanceText = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass the camera pose here
-      val newLabel = "${arDetectedObject.label} - $distanceText"
-      labelRenderer.draw(render, viewProjectionMatrix, anchor.pose, cameraPose, newLabel)
+      val originalLabel = arDetectedObject.label
+      val newLabel = originalLabel.replace("\\d+(\\.\\d+)?\\s*cm".toRegex(), "").trim()
+      val finalLabel = "$newLabel - $distanceText"
+      labelRenderer.draw(render, viewProjectionMatrix, anchor.pose, cameraPose, finalLabel)
     }
   }
 
