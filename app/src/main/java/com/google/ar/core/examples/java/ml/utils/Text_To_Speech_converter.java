@@ -4,13 +4,17 @@ import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
 
+import com.google.ar.core.examples.java.ml.DetectedObjectResult;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class Text_To_Speech_converter {
     String text;
     TextToSpeech tts ;
 
-    public Text_To_Speech_converter( Context con) {
+    public Text_To_Speech_converter( Context con,String text) {
         this.text = text;
 
 
@@ -27,6 +31,7 @@ public class Text_To_Speech_converter {
                 }
                 else{
                     Toast.makeText(con,"Initiaiation pf audio output failed !",Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
