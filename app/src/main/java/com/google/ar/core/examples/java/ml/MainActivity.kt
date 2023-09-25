@@ -17,6 +17,7 @@
 package com.google.ar.core.examples.java.ml
 
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity

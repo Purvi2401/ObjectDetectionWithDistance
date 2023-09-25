@@ -17,6 +17,7 @@
 package com.google.ar.core.examples.java.ml
 
 import android.opengl.GLSurfaceView
+import android.speech.tts.TextToSpeech
 import android.view.View
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.SwitchCompat
