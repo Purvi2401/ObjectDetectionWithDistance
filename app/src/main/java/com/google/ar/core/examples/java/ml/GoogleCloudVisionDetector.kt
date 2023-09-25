@@ -65,8 +65,10 @@ class GoogleCloudVisionDetector(val activity: MainActivity) : ObjectDetector(act
     val request = createAnnotateImageRequest(rotatedImage.toByteArray())
     val response = vision.batchAnnotateImages(listOf(request))
 
+
     // Process result and map to DetectedObjectResult.
     val objectAnnotationsResult = response.responsesList.first().localizedObjectAnnotationsList
+    print(objectAnnotationsResult.toString())
     return objectAnnotationsResult.map {
       val center = it.boundingPoly.normalizedVerticesList.calculateAverage()
       val absoluteCoordinates = center.toAbsoluteCoordinates(rotatedImage.width, rotatedImage.height)

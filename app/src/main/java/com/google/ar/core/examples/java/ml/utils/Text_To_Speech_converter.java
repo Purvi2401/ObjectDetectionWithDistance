@@ -8,8 +8,7 @@ import java.util.Locale;
 
 public class Text_To_Speech_converter {
     String text;
-    TextToSpeech tts = null;
-    TextToSpeech finalTts = tts;
+    TextToSpeech tts ;
 
     public Text_To_Speech_converter( Context con) {
         this.text = text;
@@ -19,10 +18,12 @@ public class Text_To_Speech_converter {
             @Override
             public void onInit(int i) {
                 if (i==TextToSpeech.SUCCESS){
-                    int result= finalTts.setLanguage(Locale.ENGLISH);
+                    int result= tts.setLanguage(Locale.ENGLISH);
                     if (result==TextToSpeech.LANG_MISSING_DATA || result==TextToSpeech.LANG_NOT_SUPPORTED){
                         Toast.makeText(con,"The given object text could'nt be recognised !",Toast.LENGTH_SHORT).show();
                     }
+                    Toast.makeText(con,text,Toast.LENGTH_SHORT).show();
+                    tts.speak(text,TextToSpeech.QUEUE_FLUSH,null);
                 }
                 else{
                     Toast.makeText(con,"Initiaiation pf audio output failed !",Toast.LENGTH_SHORT).show();
@@ -30,8 +31,5 @@ public class Text_To_Speech_converter {
             }
         });
 
-    }
-    public void speak(String text){
-        tts.speak(text,TextToSpeech.QUEUE_FLUSH,null);
     }
 }
