@@ -4,18 +4,16 @@ import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
 
-import com.google.ar.core.examples.java.ml.DetectedObjectResult;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-// feature implemented by Varandeep07
 
-public class Text_To_Speech_converter {
+/**
+ * Created by TTS_Conversion
+ */
+public class TTS_Conversion {
     String text;
     TextToSpeech tts ;
 
-    public Text_To_Speech_converter( Context con,String text) {
+    public TTS_Conversion(Context con, String text) {
         this.text = text;
 
 

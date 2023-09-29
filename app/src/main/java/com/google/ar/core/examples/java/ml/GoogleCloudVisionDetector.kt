@@ -20,7 +20,7 @@ import android.media.Image
 import android.util.Log
 import com.google.ar.core.examples.java.ml.utils.ImageUtils
 import com.google.ar.core.examples.java.ml.utils.ImageUtils.toByteArray
-import com.google.ar.core.examples.java.ml.utils.Text_To_Speech_converter
+import com.google.ar.core.examples.java.ml.utils.TTS_Conversion
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.calculateAverage
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.rotateCoordinates
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.toAbsoluteCoordinates
@@ -70,7 +70,7 @@ class GoogleCloudVisionDetector(val activity: MainActivity) : ObjectDetector(act
     // Process result and map to DetectedObjectResult.
     val objectAnnotationsResult = response.responsesList.first().localizedObjectAnnotationsList
     for (j in objectAnnotationsResult.indices) {
-      val txs = Text_To_Speech_converter(context, objectAnnotationsResult.get(j).name)
+      val txs = TTS_Conversion(context, objectAnnotationsResult.get(j).name)
     }
     print(objectAnnotationsResult.toString())
     return objectAnnotationsResult.map {
