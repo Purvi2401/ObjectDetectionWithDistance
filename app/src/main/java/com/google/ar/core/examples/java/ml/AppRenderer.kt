@@ -91,6 +91,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     val distanceMeter = calculateDistance(objectPose, cameraPose)
     val distanceTextCM = makeDistanceTextWithCM(distanceMeter)
     Log.d("measurement", "Distance from camera: $distanceTextCM")
+    if(distanceMeter < 1) {
+      showSnackbar("Distance is less than 100 cm")
+    }
     return distanceTextCM
   }
 
