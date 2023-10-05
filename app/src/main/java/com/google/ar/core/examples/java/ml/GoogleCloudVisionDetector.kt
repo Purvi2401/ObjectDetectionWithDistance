@@ -16,10 +16,12 @@
 
 package com.google.ar.core.examples.java.ml
 
+import android.annotation.SuppressLint
 import android.media.Image
 import android.util.Log
 import com.google.ar.core.examples.java.ml.utils.ImageUtils
 import com.google.ar.core.examples.java.ml.utils.ImageUtils.toByteArray
+import com.google.ar.core.examples.java.ml.utils.TTS_Conversion
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.calculateAverage
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.rotateCoordinates
 import com.google.ar.core.examples.java.ml.utils.VertexUtils.toAbsoluteCoordinates
@@ -41,6 +43,7 @@ class GoogleCloudVisionDetector(val activity: MainActivity) : ObjectDetector(act
     val TAG = "GoogleCloudVisionDetector"
   }
 
+  @SuppressLint("DiscouragedApi")
   val credentials = try {
     // Providing GCP credentials is not mandatory for this app, so the existence of R.raw.credentials
     // is not guaranteed. Instead, use getIdentifier to determine an optional resource.
@@ -67,6 +70,10 @@ class GoogleCloudVisionDetector(val activity: MainActivity) : ObjectDetector(act
 
     // Process result and map to DetectedObjectResult.
     val objectAnnotationsResult = response.responsesList.first().localizedObjectAnnotationsList
+    for (j in objectAnnotationsResult.indices) {
+      val txs = TTS_Conversion(context, objectAnnotationsResult.get(j).name)
+    }
+    Log.e("printing_list",objectAnnotationsResult.toString())
     return objectAnnotationsResult.map {
       val center = it.boundingPoly.normalizedVerticesList.calculateAverage()
       val absoluteCoordinates = center.toAbsoluteCoordinates(rotatedImage.width, rotatedImage.height)

@@ -25,6 +25,7 @@ import com.google.ar.core.examples.java.common.samplerender.SampleRender
 import com.google.ar.core.examples.java.common.samplerender.arcore.BackgroundRenderer
 import com.google.ar.core.examples.java.ml.render.LabelRender
 import com.google.ar.core.examples.java.ml.render.PointCloudRender
+import com.google.ar.core.examples.java.ml.utils.TTS_Conversion
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import com.google.ar.sceneform.ux.ArFragment
@@ -211,6 +212,11 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
           val cameraId = session.cameraConfig.cameraId
           val imageRotation = displayRotationHelper.getCameraSensorToDisplayRotation(cameraId)
           objectResults = currentAnalyzer.analyze(cameraImage, imageRotation)
+
+          for(i in objectResults!!){
+            var tts = TTS_Conversion(view.root.context,i.label+" "+(i.confidence*100).toInt()+" percent accuracy")
+          }
+
           cameraImage.close()
         }
       }
