@@ -15,6 +15,7 @@
  */
 package com.google.ar.core.examples.java.ml
 
+
 import android.opengl.Matrix
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -36,6 +37,10 @@ import kotlinx.coroutines.launch
 import java.util.ArrayList
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.math.abs
+import android.hardware.SensorManager
+import androidx.core.text.HtmlCompat
+import android.text.Spanned
 
 /**
  * Renders the HelloAR application into using our example Renderer.
@@ -109,6 +114,46 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
       objectPose0.tz() - objectPose1.tz()
     )
   }
+
+  private fun calculateObjectRotation(objectPose: Pose, cameraPose: Pose): Int {
+    // Get the transformation matrices for object and camera poses.
+    val objectMatrix = FloatArray(16)
+    objectPose.toMatrix(objectMatrix, 0)
+
+    val cameraMatrix = FloatArray(16)
+    cameraPose.toMatrix(cameraMatrix, 0)
+
+    // Extract the rotation matrices from the transformation matrices.
+    val objectRotationMatrix = FloatArray(9)
+    val cameraRotationMatrix = FloatArray(9)
+
+    for (i in 0..2) {
+      for (j in 0..2) {
+        objectRotationMatrix[i * 3 + j] = objectMatrix[i * 4 + j]
+        cameraRotationMatrix[i * 3 + j] = cameraMatrix[i * 4 + j]
+      }
+    }
+
+    // Calculate the rotation angles using the rotation matrices.
+    val objectAngles = FloatArray(3)
+    val cameraAngles = FloatArray(3)
+
+    SensorManager.getOrientation(objectRotationMatrix, objectAngles)
+    SensorManager.getOrientation(cameraRotationMatrix, cameraAngles)
+
+    // Calculate the relative rotation angles.
+    val relativeRotationAngles = FloatArray(3)
+    for (i in 0..2) {
+      relativeRotationAngles[i] = cameraAngles[i] - objectAngles[i]
+    }
+
+    // Get the rotation around the up axis (y-axis).
+    val rotationDegrees = Math.toDegrees(relativeRotationAngles[1].toDouble())
+
+    // Adjust the rotation to be in the range of -180 to 180 degrees.
+    return if (rotationDegrees > 180) rotationDegrees.toInt() - 360 else rotationDegrees.toInt()
+  }
+
 
   override fun onResume(owner: LifecycleOwner) {
     displayRotationHelper.onResume()
@@ -249,10 +294,12 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     for (arDetectedObject in arLabeledAnchors) {
       val anchor = arDetectedObject.anchor
       if (anchor.trackingState != TrackingState.TRACKING) continue
-      val distanceText = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass the camera pose here
+      val objectRotation = calculateObjectRotation(anchor.pose, cameraPose)
+      val distanceText = measureDistanceFromCamera(anchor.pose, cameraPose)
+
       val originalLabel = arDetectedObject.label
       val newLabel = originalLabel.replace("\\d+(\\.\\d+)?\\s*cm".toRegex(), "").trim()
-      val finalLabel = "$newLabel - $distanceText"
+      val finalLabel = "$newLabel $objectRotation °"
       labelRenderer.draw(render, viewProjectionMatrix, anchor.pose, cameraPose, finalLabel)
     }
   }
