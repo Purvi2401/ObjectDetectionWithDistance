@@ -30,7 +30,6 @@ public class TTS_Conversion {
                 }
                 else{
                     Toast.makeText(con,"Initiaiation pf audio output failed !",Toast.LENGTH_SHORT).show();
-
                 }
             }
 

@@ -45,6 +45,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   companion object {
     val TAG = "HelloArRenderer"
   }
+  val map_labels= HashMap<Pair<String, String>, Int>()
 
   lateinit var view: MainActivityView
 
@@ -88,18 +89,16 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     return distanceTextCM
   }
 
-  private fun measureDistanceFromCamera(centreCoordinates: Pose, frame: Frame): String{
-    return if (placedAnchors.size >= 1) {
-      val distanceMeter = calculateDistance(
-        centreCoordinates,
-        frame!!.camera.pose)
-      measureDistanceOf2Points(distanceMeter)
+  private fun measureDistanceFromCamera(objectPose: Pose, cameraPose: Pose): String {
+    val distanceMeter = calculateDistance(objectPose, cameraPose)
+    val distanceTextCM = makeDistanceTextWithCM(distanceMeter)
+    Log.d("measurement", "Distance from camera: $distanceTextCM")
+    if(distanceMeter < 1) {
+      showSnackbar("Distance is less than 100 cm")
     }
-    else {
-      Log.i("measure dist from cam", "placed anchors empty")
-      ""
-    }
+    return distanceTextCM
   }
+
 
   private fun calculateDistance(x: Float, y: Float, z:Float): Float{
     return sqrt(x.pow(2) + y.pow(2) + z.pow(2))
@@ -213,6 +212,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
           val imageRotation = displayRotationHelper.getCameraSensorToDisplayRotation(cameraId)
           objectResults = currentAnalyzer.analyze(cameraImage, imageRotation)
 
+
           for(i in objectResults!!){
             var tts = TTS_Conversion(view.root.context,i.label+" "+(i.confidence*100).toInt()+" percent accuracy")
           }
@@ -224,6 +224,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
 
     /** If results were completed this frame, create [Anchor]s from model results. */
     val objects = objectResults
+    val cameraPose = frame.camera.pose
     if (objects != null) {
       objectResults = null
       Log.i(TAG, "$currentAnalyzer got objects: $objects")
@@ -232,7 +233,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame) ?: return@mapNotNull null
         Log.i(TAG, "Created anchor ${anchor.pose} from hit test")
         placedAnchors.add(anchor)
-        val distance = measureDistanceFromCamera(anchor.pose, frame)
+        val distance = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass cameraPose instead of frame
         ARLabeledAnchor(anchor, obj.label+" "+distance)
       }
       arLabeledAnchors.addAll(anchors)
@@ -256,6 +257,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     for (arDetectedObject in arLabeledAnchors) {
       val anchor = arDetectedObject.anchor
       if (anchor.trackingState != TrackingState.TRACKING) continue
+
       labelRenderer.draw(
         render,
         viewProjectionMatrix,
@@ -263,6 +265,30 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         camera.pose,
         arDetectedObject.label
       )
+      val arr_str=arDetectedObject.label.split(" ");
+      val j=0
+      var arr_str_size1 = arr_str.size-3
+      var object_name = "";
+      for (j in 0..arr_str_size1){
+        object_name += arr_str[j];
+      }
+      var object_distance = "";
+      for ( j in arr_str_size1+1..arr_str.size-1){
+        object_distance += arr_str[j];
+      }
+      if(!map_labels.containsKey(Pair(object_name,object_distance))){
+
+        val tell=object_name + " is found at the position "+object_distance;
+        var tts = TTS_Conversion(view.root.context,tell);
+        map_labels.put(Pair(object_name,object_distance),1);
+      }
+
+      val distanceText = measureDistanceFromCamera(anchor.pose, cameraPose) // Pass the camera pose here
+      val originalLabel = arDetectedObject.label
+      val newLabel = originalLabel.replace("\\d+(\\.\\d+)?\\s*cm".toRegex(), "").trim()
+      val finalLabel = "$newLabel - $distanceText"
+      labelRenderer.draw(render, viewProjectionMatrix, anchor.pose, cameraPose, finalLabel)
+
     }
   }
 
